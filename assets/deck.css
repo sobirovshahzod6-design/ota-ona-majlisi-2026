@@ -183,3 +183,6 @@ body.presenter .sug,:fullscreen .sug{display:none}
 .kompas .kst{display:flex;gap:12px;align-items:flex-start;font-size:19px;line-height:1.35;margin:10px 0;cursor:pointer;color:var(--ink)}
 .kompas .kst input{width:24px;height:24px;accent-color:#2E7D0F;flex:none;margin-top:1px}.kompas .kst input:checked+span{color:var(--ink2);text-decoration:line-through}
 .kompas .krow span{width:220px;font-size:21px}.kompas .kbar{height:26px}.kompas .kst{font-size:21px}.kompas .kh b{font-size:25px}.kompas h4{font-size:23px}.kompas .klg{font-size:17px}
+table.rm{width:100%;font-size:22px}table.rm td,table.rm th{padding:9px 12px}.rm .okc{color:#2E7D0F;font-weight:700}.rm .lowc{color:#A35F00;font-weight:700}
+.miss{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:12px}.miss span{background:#F5FBFF;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:19px;color:var(--ink)}
+.qrc{display:flex;gap:22px;align-items:center}.qrc img{width:170px;height:170px;flex:none}.qrc b{font-size:24px;color:var(--navy)}.qrc p{font-size:20px;color:var(--ink2);margin:6px 0}.qrc code{font-size:21px;color:var(--navy);font-weight:700}
