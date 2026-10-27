@@ -150,7 +150,8 @@ const bldShort = b => (/qizlar/i.test(b) ? t('Qizlar', 'Девочки') + (/qam
 function build() {
   const sub = D.subjects.filter(s => s.n > 0);
   const g = D.grades, att = D.att, R = D.returning, par = D.parallel;
-  const lessons = D.subjects.filter(s => s.src === 'sinf').reduce((a, s) => a + s.lessons, 0);
+  const clsLessons = D.subjects.filter(s => s.src === 'sinf').reduce((a, s) => a + s.lessons, 0);
+  const lessons = clsLessons + (D.course_lessons || 0); // kurslar: o'quvchiga o'rtacha
   const famPct = pc(D.app.families, D.n), schoolFam = pc(D.app_school.families, D.app_school.students);
   const worstExam = D.exams.length ? D.exams.slice().sort((a, b) => a.av - b.av)[0] : null;
   const bestExam = D.exams.length ? D.exams.slice().sort((a, b) => b.av - a.av)[0] : null;
@@ -201,7 +202,7 @@ function build() {
         <div class="kpi frag"><b>${D.n}</b><span>${t('o‘quvchi', 'учеников')}<br>${R.n ? t(`${R.n} nafari o‘tgan yildan beri DATA’da`, `${R.n} учатся в DATA с прошлого года`) : t('hammasi yangi kelgan', 'все пришли в этом году')}</span></div>
         ${NG ? `<div class="kpi g frag"><b>${D.coins_total}</b><span>${t('koin (rag‘bat)', 'коинов (поощрений)')}<br>${t('ustozlardan', 'от учителей')}</span></div>` : `<div class="kpi g frag"><b>${f(g.avg)}</b><span>${t('o‘rtacha baho', 'средний балл')}<br>${g.n.toLocaleString('ru')} ${t('ta bahodan', 'оценок')}</span></div>`}
         <div class="kpi c frag"><b>${f(att.pct, 1)}%</b><span>${t('davomat', 'посещаемость')}<br>${t('maktab bo‘yicha', 'по школе')} ${f(D.school_att, 1)}%</span></div>
-        <div class="kpi frag"><b>${lessons}</b><span>${t('o‘tilgan dars', 'проведённых уроков')}<br>${t('sinf jadvali bo‘yicha', 'по расписанию класса')}</span></div>
+        <div class="kpi frag"><b>${lessons}</b><span>${t('o‘tilgan dars', 'проведённых уроков')}<br>${t('sinf jadvali va kurslar', 'класс и курсы')}</span></div>
         <div class="kpi y frag"><b>${D.teachers_sum.n}</b><span>${t('ustoz sinfda dars beradi', 'учителей ведут уроки')}<br>${t('o‘rtacha tajriba', 'средний стаж')} ${f(D.teachers_sum.exp_avg, 1)}</span></div>
       </div>
       <div class="card frag" style="margin-top:40px;font-size:30px;line-height:1.45;border-left:8px solid var(--cyan)">
@@ -295,7 +296,7 @@ function build() {
 
     { html: () => `<div class="kicker">${t('O‘tilgan darslar', 'Проведённые уроки')}</div><h2>${t('Har bir fandan nechta dars o‘tildi', 'Сколько уроков проведено по каждому предмету')}</h2>
       <div class="body"><div class="col" style="flex:1.5">${hbars(D.subjects.slice(0, 20).map(s => ({ l: subjT(s.uz), v: s.lessons, c: s.src === 'kurs' ? S2 : S1 })), { w: 1150, row: Math.min(40, Math.floor(780 / Math.min(20, D.subjects.length))), lw: 440 })}</div>
-      <div class="col"><div class="card"><div class="big">${lessons}</div><div class="lbl">${t('dars sinf jadvali bo‘yicha', 'уроков по расписанию класса')}</div></div>
+      <div class="col"><div class="card"><div class="big">${lessons}</div><div class="lbl">${t('o‘tilgan dars: sinf jadvali va kurslar', 'проведённых уроков: класс и курсы')}</div><p class="note" style="margin-top:12px">${t(`Sinf jadvali: ${clsLessons} · kurslar: ${D.course_lessons || 0} (bitta o‘quvchiga)`, `По расписанию класса: ${clsLessons} · курсы: ${D.course_lessons || 0} (на одного ученика)`)}</p></div>
       <div class="legend" style="flex-direction:column;gap:12px"><span><i style="background:${S1}"></i>${t('Sinf jadvali', 'Классное расписание')}</span><span><i style="background:${S2}"></i>${t('Daraja bo‘yicha guruhlar (o‘quvchiga o‘rtacha)', 'Группы по уровню (в среднем на ученика)')}</span></div></div></div>`,
       notes: () => t('O‘tilgan (tugagan) darslar soni. Guruh darslari bitta o‘quvchi o‘rtacha qatnashgan darslar bilan ko‘rsatilgan.', 'Число проведённых уроков. Для групп — в среднем на одного ученика.') },
 
