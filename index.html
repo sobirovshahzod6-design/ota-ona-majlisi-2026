@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>1-chorak majlislari</title>
+<style>
+@font-face{font-family:PJS;src:url(assets/fonts/PlusJakartaSans-400.ttf);font-weight:400}
+@font-face{font-family:PJS;src:url(assets/fonts/PlusJakartaSans-700.ttf);font-weight:700}
+@font-face{font-family:PJS;src:url(assets/fonts/PlusJakartaSans-800.ttf);font-weight:800}
+:root{--navy:#072BAD;--cyan:#03CAFF;--ink:#0d1533;--ink2:#4a5677;--line:#DBE6F5;--bg:#F4F8FF;--card:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#eef2ff;--ink2:#a9b5d6;--line:#26315c;--bg:#0b1230;--card:#141d45}}
+*{box-sizing:border-box;margin:0}
+body{font-family:PJS,system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:0 16px 60px}
+header{background:var(--navy);color:#fff;margin:0 -16px;padding:36px 16px 44px}
+.wrap{max-width:1180px;margin:0 auto}
+header img{height:38px}
+h1{font-size:clamp(28px,4.5vw,46px);font-weight:800;margin:22px 0 8px;letter-spacing:-.01em}
+header p{color:#CDEFFD;font-size:17px;max-width:720px;line-height:1.5}
+.bar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:28px auto 18px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px}
+.seg button{font:inherit;border:0;background:none;color:var(--ink2);padding:9px 18px;border-radius:999px;font-weight:700;cursor:pointer}
+.seg button.on{background:var(--navy);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.c h2{font-size:34px;font-weight:800;color:var(--navy);display:flex;justify-content:space-between;align-items:center}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .c h2{color:#9fb6ff}}
+.c .m{font-size:14px;color:var(--ink2);line-height:1.45}
+.tag{font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#E9F8FF;color:var(--navy)}
+.tag.no{background:#FFF5DF;color:#8a5200}
+.btns{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}
+.btns a{flex:1;text-align:center;text-decoration:none;font-weight:700;font-size:14px;padding:11px 10px;border-radius:12px;background:var(--navy);color:#fff}
+.btns a.s{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btns a[aria-disabled]{opacity:.35;pointer-events:none}
+.lg{display:inline-flex;gap:4px}
+.lg button{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);background:none;color:var(--ink2);border-radius:8px;padding:4px 8px;cursor:pointer}
+.lg button.on{background:var(--cyan);color:var(--navy);border-color:var(--cyan)}
+footer{max-width:1180px;margin:30px auto 0;font-size:13px;color:var(--ink2);line-height:1.6}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <img src="assets/img/data-logo-white.png" alt="DATA xalqaro maktabi">
+  <h1 id="h1">1-chorak yakunlari: ota-onalar majlislari</h1>
+  <p id="hp">Har bir sinf uchun taqdimot. Sinfingizni toping, tilni tanlang va "Taqdimot"ni bosing. Suflyor oynasi noutbukda alohida ochiladi.</p>
+</div></header>
+<div class="wrap">
+  <div class="bar"><div class="seg" id="ui"><button data-l="uz" class="on">O'zbekcha</button><button data-l="ru">Русский</button></div><span class="m" id="asof"></span></div>
+  <div class="grid" id="grid"></div>
+</div>
+<footer id="ft"></footer>
+<script src="assets/vault.js"></script>
+<script>
+const T={uz:{h1:"1-chorak yakunlari: ota-onalar majlislari",hp:"Har bir sinf uchun taqdimot. Sinfingizni toping, tilni tanlang va \"Taqdimot\"ni bosing. Suflyor oynasi noutbukda alohida ochiladi.",go:"Taqdimot",pr:"Suflyor",rd:"Tayyor",dr:"Tayyorlanmoqda",n:"o'quvchi",rahbar:"Sinf rahbari",tyutor:"Tyutor",asof:"Ma'lumot: Durbin, ",ft:"Klaviatura: ← → slayd, L til, P suflyor, F to'liq ekran. Suflyor va taqdimot bir-biriga ulangan: qaysi birida slayd almashtirsangiz, ikkinchisida ham almashadi. Faqat maktab xodimlari uchun."},
+ ru:{h1:"Итоги 1-й четверти: родительские собрания",hp:"Презентация для каждого класса. Найдите свой класс, выберите язык и нажмите «Презентация». Окно суфлёра откроется на ноутбуке отдельно.",go:"Презентация",pr:"Суфлёр",rd:"Готово",dr:"Готовится",n:"учеников",rahbar:"Классный руководитель",tyutor:"Тьютор",asof:"Данные: Durbin, ",ft:"Клавиатура: ← → слайды, L язык, P суфлёр, F полный экран. Суфлёр и презентация связаны: слайд переключается в обоих окнах. Только для сотрудников школы."}};
+let L; try{L=localStorage.getItem('majlis.ui')}catch(e){} L=L||'uz';
+let IDX=null; const lang={};
+function draw(){
+  const t=T[L]; document.documentElement.lang=L;
+  for(const k of ['h1','hp','ft']) document.getElementById(k).textContent=t[k];
+  document.querySelectorAll('#ui button').forEach(b=>b.classList.toggle('on',b.dataset.l===L));
+  if(!IDX) return;
+  document.getElementById('asof').textContent=t.asof+IDX.asof.split('-').reverse().join('.');
+  document.getElementById('grid').innerHTML=IDX.classes.map(c=>{
+    const l=lang[c.k]||c.lang, q=`k=${encodeURIComponent(c.k)}&lang=${l}`;
+    return `<div class="c"><h2>${c.k}<span class="tag ${c.ready?'':'no'}">${c.ready?t.rd:t.dr}</span></h2>
+      <div class="m">${t[c.role]}: ${c.lead}<br>${c.n} ${t.n} · ${c.lang==='ru'?'RU':'UZ'}</div>
+      <div class="lg">${['uz','ru'].map(x=>`<button data-k="${c.k}" data-l="${x}" class="${x===l?'on':''}">${x.toUpperCase()}</button>`).join('')}</div>
+      <div class="btns"><a href="deck.html?${q}" ${c.ready?'':'aria-disabled="true"'}>${t.go}</a><a class="s" href="deck.html?${q}&p=1" target="suflyor" ${c.ready?'':'aria-disabled="true"'}>${t.pr}</a></div></div>`}).join('');
+  document.querySelectorAll('.lg button').forEach(b=>b.onclick=()=>{lang[b.dataset.k]=b.dataset.l;draw()});
+}
+document.querySelectorAll('#ui button').forEach(b=>b.onclick=()=>{L=b.dataset.l;try{localStorage.setItem('majlis.ui',L)}catch(e){};draw()});
+VAULT.json('data/index.json').then(d=>{IDX=d;draw()});
+draw();
+</script>
+</body>
+</html>
