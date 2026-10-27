@@ -566,13 +566,14 @@ function go(i, fr, from) {
   history.replaceState(null, '', `#${cur + 1}`);
   suggestLink();
 }
+const TG_TO = 'Shahzod_Sabirov';
 // Tyutor taklifi: Telegram'ni sinf, slayd raqami va sarlavhasi yozilgan tayyor xabar bilan ochadi
 function suggestLink() {
   const a = document.getElementById('sug'); if (!a || !D) return;
   const sl = document.querySelector(`#main .slide[data-i="${cur}"]`);
   const kick = sl?.querySelector('.kicker')?.textContent || '', title = sl?.querySelector('h1,h2')?.textContent || '';
-  const text = `${t('Taklif', 'Предложение')} · ${D.k} · ${cur + 1}-${t('slayd', 'слайд')} (${kick}: ${title})\n\n`;
-  a.href = `https://t.me/share/url?url=${encodeURIComponent(location.href)}&text=${encodeURIComponent(text)}`;
+  const text = `${t('Taklif', 'Предложение')} · ${D.k} · ${cur + 1}-${t('slayd', 'слайд')} (${kick}: ${title})\n${location.href}\n\n`;
+  a.href = `https://t.me/${TG_TO}?text=${encodeURIComponent(text)}`;
 }
 function next() { const n = PRESENTER ? (document.querySelector(`#pcur .slide[data-i="${cur}"]`)?.querySelectorAll('.frag').length || 0) : fragsOf(cur); frag < n ? go(cur, frag + 1) : cur < SLIDES.length - 1 && go(cur + 1, 0); }
 function prev() { frag > 0 ? go(cur, frag - 1) : cur > 0 && go(cur - 1, 99); }
