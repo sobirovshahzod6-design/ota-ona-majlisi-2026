@@ -3,6 +3,7 @@
 const Q = new URLSearchParams(location.search);
 const KEY = Q.get('k') || '9-B';
 const PRESENTER = Q.get('p') === '1';
+const PRINT = Q.get('print') === '1'; // PDF uchun: ota-onaga beriladigan nusxa (tools/make_pdf.py)
 let LANG = Q.get('lang') || localGet('lang') || 'uz';
 let D = null, SLIDES = [], cur = 0, frag = 0;
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('majlis-' + KEY) : null;
@@ -170,6 +171,10 @@ function build() {
   const distBar = (x, label) => `<div class="drow"><span class="dl">${label}</span><div class="dbar">${['g5', 'g4', 'g3', 'g2'].map(k => { const p = (100 * x[k]) / x.n; return p > 0 ? `<i style="width:${p}%;background:${DIST_C[k]}" data-tip="«${k[1]}»: ${x[k].toLocaleString('ru')} (${f(p, 1)}%)">${p >= 4 ? Math.round(p) + '%' : ''}</i>` : ''; }).join('')}</div><span class="dn">${x.n.toLocaleString('ru')}</span></div>`;
   const famPct = pc(D.app.families, D.n), schoolFam = pc(D.app_school.families, D.app_school.students);
   const EX = D.exams.filter(e => e.pct != null);
+  // Fanlar reytingi: progress bor sinfda shu fanlar (kundalik va progress o'rtachasi), bo'lmasa kundalik baho
+  const pool = (D.exams.length ? D.exams.map(e => ({ nm: e, j: e.daily, e: e.av, sc: e.daily != null ? (e.daily + e.av) / 2 : e.av }))
+    : D.subjects.filter(s => s.n >= 10 && s.avg != null && !/Jismoniy|Musiqa|Texnologiya|Tarbiya|san'at|Art/.test(s.base)).map(s => ({ nm: { subj: s.uz, ru: s.ru }, j: s.avg, e: null, sc: s.avg }))).sort((a, b) => b.sc - a.sc);
+  const rankN = Math.min(4, Math.floor(pool.length / 2));
   const worstExam = EX.length ? EX.slice().sort((a, b) => a.av - b.av)[0] : null;
   const bestExam = EX.length ? EX.slice().sort((a, b) => b.av - a.av)[0] : null;
   const exName = e => (LANG === 'ru' ? e.ru : e.subj);
@@ -352,6 +357,13 @@ function build() {
       <p class="note" style="margin-top:10px">${t('Yashil: 4,6 va yuqori · ko‘k: 4,3–4,59 · sariq: 4,3 dan past. Baho qo‘yilmaydigan fanlar jadvalda yo‘q.', 'Зелёный: 4,6 и выше · синий: 4,3–4,59 · жёлтый: ниже 4,3. Предметы без оценок не показаны.')}</p>`; },
       notes: () => t('Kuchli fanlar (yashil) va e’tibor kerak fanlarni qisqa ayting. Batafsil ma’lumot shaxsiy hisobotda.', 'Кратко: сильные предметы (зелёные) и требующие внимания. Подробности — в личном отчёте.') },
 
+    { when: () => !NG && pool.length >= 4, html: () => { const row = (x, c) => `<div class="frow"><span class="fn">${esc(exName(x.nm))}</span><span class="fd">${x.e != null ? `${t('kundalik', 'ежедн.')} ${f(x.j)} · progress ${f(x.e)}` : t('kundalik baho', 'ежедн. оценка')}</span><b style="color:${c}">${f(x.sc)}</b></div>`;
+      return `<div class="kicker">${t('Sinf natijasi', 'Результат класса')}</div><h2>${t(`${D.k}: kuchli fanlar va e’tibor kerak fanlar`, `${D.k}: сильные предметы и предметы, требующие внимания`)}</h2>
+      <div class="body"><div class="col"><div class="card frag fcol" style="border-top:8px solid #2E7D0F"><h3 style="color:#2E7D0F">${t('Eng yaxshi fanlar', 'Лучшие предметы')}</h3>${pool.slice(0, rankN).map(x => row(x, '#2E7D0F')).join('')}</div></div>
+        <div class="col"><div class="card frag fcol" style="border-top:8px solid #C98200"><h3 style="color:#A35F00">${t('E’tibor kerak fanlar', 'Предметы, требующие внимания')}</h3>${pool.slice(-rankN).reverse().map(x => row(x, '#A35F00')).join('')}</div></div></div>
+      <p class="note" style="margin-top:18px">${D.exams.length ? t('Baho: kundalik o‘rtacha va progress imtihon o‘rtachasining o‘rtasi. Qayta topshirishlar bilan o‘zgarishi mumkin.', 'Балл: среднее между ежедневной оценкой и прогресс-экзаменом. Может измениться после пересдач.') : t('Baho: kundalik o‘rtacha baho.', 'Балл: средняя ежедневная оценка.')} ${t(`Bu sinfning umumiy rasmi, har bir bola natijasi boshqacha bo‘lishi mumkin. Qo‘shimcha mashg‘ulotni ${rl('uz')} orqali kelishing.`, `Это общая картина класса, у каждого ребёнка результат может отличаться. О дополнительных занятиях договоритесь через ${rl('gen')}.`)}</p>`; },
+      notes: () => t('Bu sinf bo‘yicha umumiy xulosa. E’tibor kerak fanni ustoz bilan bog‘lamang va biror bolaga ishora qilmang: gap 2-chorakda shu fanlarni birga kuchaytirish haqida.', 'Это общий вывод по классу. Не связывайте предмет с конкретным учителем и не указывайте на детей: речь о том, чтобы вместе усилить эти предметы во 2-й четверти.') },
+
     { html: () => { const s = D.teachers_sum, many = D.teachers.length > 20; return `<div class="kicker">${t('Sinf ustozlari', 'Учителя класса')}</div><h2 style="margin:6px 0 0;font-size:54px">${t(`${s.n} ustoz, o‘rtacha ${f(s.exp_avg, 1)} yil tajriba`, `${s.n} учителей, средний стаж ${f(s.exp_avg, 1)} лет`)}</h2>
       <div style="display:flex;gap:16px;margin:18px 0 22px;flex-wrap:wrap">${['oliy', 't1', 't2', 'mut'].filter(k => s.deg[k]).map(k => `<span class="chip">${tr(k)}: ${s.deg[k]}</span>`).join('')}<span class="chip">${t('5+ yil tajriba', 'Стаж 5+ лет')}: ${s.exp5}</span></div>
       <div class="grid4 tgrid" style="${many ? '' : 'grid-template-columns:repeat(4,1fr)'}">${D.teachers.map(x => `<div class="tcard"><div class="ava">${initials(x.nm)}</div><div><div class="n">${esc(x.nm.split(' ').slice(0, 2).join(' '))}</div><div class="m">${x.subj.slice(0, 2).map(subjT).join(', ')}<span class="deg ${x.deg}">${tr(x.deg)}</span></div><div class="m">${x.exp ? t(`Staj ${x.exp} yil · `, `Стаж ${x.exp} · `) : ''}DATA: ${x.since}${t('-yildan', ' г.')}</div></div></div>`).join('')}</div>`; },
@@ -367,7 +379,7 @@ function build() {
       notes: () => t('Support ustozni tanishtiring va u sinfda aniq nima qilganiga 1-2 misol keltiring. Bola bo‘yicha savollarni majlisdan keyin oling.', 'Представьте support-учителя и приведите 1–2 примера его работы в классе. Вопросы о конкретном ребёнке обсудите после собрания.') },
 
     { when: () => !NG && D.top.length >= 3, html: () => `<div class="kicker">${t('Yutuqlar', 'Достижения')}</div><h2>${t('Chorakning eng yaxshi o‘quvchilari', 'Лучшие ученики четверти')}</h2>
-      <p class="note">${t('Kartani bosing: ism ochiladi. Ikkala jurnal baholari bo‘yicha o‘rtacha.', 'Нажмите на карточку, чтобы открыть имя. Средний балл по обоим журналам.')}</p>
+      <p class="note">${(PRINT ? '' : t('Kartani bosing: ism ochiladi. ', 'Нажмите на карточку: откроется имя. ')) + t('Ikkala jurnal baholari bo‘yicha o‘rtacha.', 'Средний балл по обоим журналам.')}</p>
       <div class="podium" style="margin-top:30px;grid-template-columns:repeat(${D.top.length},1fr)">${D.top.slice().reverse().map((x, i) => { const r = D.top.length - i; return `<div class="pod" style="height:${360 + (5 - r) * 70}px"><div class="rank">#${r}</div><div class="nm">${twoName(x.nm)}</div><div class="sc">${f(x.q1)}</div><div class="note">${x.n} ${t('ta baho', 'оценок')}</div><div class="hint">${t('bosing', 'нажмите')}</div></div>`; }).join('')}</div>`,
       init: el => el.querySelectorAll('.pod').forEach(p => (p.onclick = () => p.classList.add('open'))),
       notes: () => t('Oxirgi o‘rindan boshlab bittadan oching va har birini olqishlang.', 'Открывайте по одному с последнего места и просите аплодисменты.') },
@@ -397,7 +409,7 @@ function build() {
       <div class="card" style="font-size:25px;line-height:1.4;color:var(--ink2)">${t(`Bola kasal bo‘lsa, uyda qolsin va ertalab ${rl('uz')}ga xabar bering: uzrli sabab jurnalda belgilanadi.`, `Если ребёнок болеет, пусть остаётся дома, а утром сообщите ${rl('dat')}: уважительная причина отмечается в журнале.`)}</div></div></div>`,
       notes: () => t('Davomat sinf jurnali bo‘yicha. Kechikish "qatnashgan" hisoblanadi.', 'Посещаемость по классному журналу. Опоздание считается присутствием.') },
 
-    { when: () => DS.length > 0, html: () => `<div class="kicker">${t('Yotoqxona', 'Общежитие')}</div><h2>${t(`Yotoqxonada ${DS.length} o‘quvchimiz yashaydi`, `В общежитии живут ${DS.length} наших учеников`)}</h2>
+    { noPrint: true, when: () => DS.length > 0, html: () => `<div class="kicker">${t('Yotoqxona', 'Общежитие')}</div><h2>${t(`Yotoqxonada ${DS.length} o‘quvchimiz yashaydi`, `В общежитии живут ${DS.length} наших учеников`)}</h2>
       <div class="body" style="gap:28px"><div class="col" style="flex:2.1"><table class="tight" style="font-size:${DS.length > 12 ? 15 : DS.length > 9 ? 17 : 20}px"><tr><th>${t('O‘quvchi', 'Ученик')}</th><th>${t('Xona', 'Комната')}</th><th>${t('Xonadoshlari', 'Соседи по комнате')}</th><th class="num">${t('O‘rtacha', 'Средний')}</th><th class="num">${t('Koin', 'Коины')}</th></tr>
         ${DS.map(x => `<tr><td><b>${twoName(x.nm)}</b></td><td style="white-space:nowrap">${esc(x.room.replace(/\s*\(.*\)/, ''))} · ${esc(bldShort(x.bld))}</td><td style="font-size:.85em">${x.mates.map(m => `${twoName(m.nm)} <span style="color:#8792ad">${m.k}</span>`).join(', ')}</td><td class="num">${f(x.q1)}</td><td class="num">${x.coins ?? '—'}</td></tr>`).join('')}</table></div>
       <div class="col">${card(t('Natija', 'Результат'), `<div class="big" style="font-size:90px">${f(D.dorm.avg)}</div><div class="lbl">${t(`yotoqxona o‘quvchilari o‘rtachasi · sinf ${f(g.avg)}`, `средний балл жильцов · класс ${f(g.avg)}`)}</div>`)}
@@ -583,7 +595,7 @@ function build() {
           .map(x => `<div style="display:grid;grid-template-columns:1fr 130px 40px 130px;align-items:center;font-size:27px;padding:12px 0;border-bottom:1px solid var(--line)"><span>${x[0]}</span><b style="color:#8792ad;text-align:right">${x[1]}</b><span style="text-align:center;color:var(--cyan)">→</span><b style="color:var(--navy);text-align:right">${x[2]}</b></div>`).join(''))}</div></div>`,
       notes: () => t('Chorak sanalari Durbin kalendaridan. Sinf maqsadlarini ota-onalar bilan kelishib oling.', 'Даты четвертей из календаря Durbin. Согласуйте цели класса с родителями.') },
 
-    { when: () => D.survey_missing, html: () => { const S = D.survey_missing, nm = x => x.split(' ').slice(0, 2).join(' ');
+    { noPrint: true, when: () => D.survey_missing, html: () => { const S = D.survey_missing, nm = x => x.split(' ').slice(0, 2).join(' ');
       return `<div class="kicker">${t('So‘rovnomalar', 'Опросы')}</div><h2>${S.missing.length ? t(`${S.n} oiladan ${S.done} tasi so‘rovnomada qatnashdi`, `В опросе участвовали ${S.done} из ${S.n} семей`) : t(`Sinfdagi barcha ${S.n} oila so‘rovnomada qatnashdi`, `Все ${S.n} семей класса прошли опрос`)}</h2>
       <div class="body" style="align-items:flex-start"><div class="col" style="flex:1.3">${S.missing.length ? `<div class="card"><h3 style="font-size:26px;color:var(--navy)">${t('Hali qatnashmagan oilalar (farzand ismi)', 'Ещё не прошли опрос (имя ребёнка)')}</h3><div class="miss">${S.missing.map(x => `<span>${esc(nm(x))}</span>`).join('')}</div></div>` : `<div class="card" style="font-size:26px;border-left:8px solid #2E7D0F">${t('Rahmat! Javoblaringiz har bir bola bilan ishlashda ishlatilmoqda.', 'Спасибо! Ваши ответы используются в работе с каждым ребёнком.')}</div>`}
         <div class="card qrc"><img src="assets/img/qr-sorovnoma.svg" alt="QR"><div><b>${t('“Farzandingiz haqida” so‘rovnomasi', 'Опрос «О вашем ребёнке»')}</b><p>${t('Telefon kamerasini QR kodga qarating yoki havolani oching. 7 ta savol, 5 daqiqa.', 'Наведите камеру на QR-код или откройте ссылку. 7 вопросов, 5 минут.')}</p><code>durbin.uz/sorovnoma/data.html</code></div></div></div>
@@ -658,7 +670,7 @@ function build() {
       <div class="chip" style="margin-top:26px;background:var(--cyan);color:var(--navy);font-size:24px">${t('Chiqishda: shaxsiy hisobot va rozilik hujjati (DA-02)', 'На выходе: личный отчёт и форма согласия (DA-02)')}</div></div>
       <img src="assets/img/dubi/ogil.jpg" alt="" style="height:620px;border-radius:40px"></div>`,
       notes: () => t('Savol-javob uchun 15-20 daqiqa. Oxirida shaxsiy hisobotlarni tarqating, rozilik hujjatlarini yig‘ing va ilovani o‘rnatishga yordam bering.', 'На вопросы 15–20 минут. В конце раздайте отчёты, соберите формы согласия и помогите установить приложение.') },
-  ].filter(s => !s.when || s.when());
+  ].filter(s => (!s.when || s.when()) && !(PRINT && s.noPrint));
 }
 
 /* ---------- render & navigation ---------- */
@@ -762,8 +774,12 @@ async function main() {
     setInterval(tick, 1000);
   }
   cur = Math.max(0, (parseInt(location.hash.slice(1)) || 1) - 1);
-  if (Q.has('shot')) { frag = 99; document.body.classList.add('shot'); } // skrinshot uchun: barcha bo'laklar ochiq
+  if (Q.has('shot') || PRINT) { frag = 99; document.body.classList.add('shot'); } // skrinshot uchun: barcha bo'laklar ochiq
+  if (PRINT) document.body.classList.add('print');
   rebuild();
+  if (PRINT) { document.querySelectorAll('#main .slide').forEach(el => el.classList.add('on')); document.querySelectorAll('#main .frag').forEach(el => el.classList.add('in')); document.querySelectorAll('.pod,.acc').forEach(el => el.classList.add('open')); return; }
+  const dl = document.getElementById('dl');
+  if (dl) { dl.onclick = download; if (Q.has('dl')) download(); }
   tips(document.body);
   addEventListener('resize', layout);
   addEventListener('keydown', e => {
@@ -777,6 +793,13 @@ async function main() {
   });
   if (chan) chan.onmessage = ({ data }) => { if (data.lang && data.lang !== LANG) { LANG = data.lang; rebuild(); } if (data.i != null) go(data.i, data.f, true); };
   if (!PRESENTER) document.getElementById('main').addEventListener('click', e => { if (!e.target.closest('button,input,label,a,.pod,.hit,.acc,figure,.tab')) next(); });
+}
+async function download() {
+  const b = document.getElementById('dl'), label = b.textContent;
+  b.textContent = t('Yuklanmoqda…', 'Загрузка…');
+  try { await VAULT.pdf(`data/pdf/${KEY}-${LANG}.bin`, `DATA-majlis-${KEY}-${LANG}.pdf`); }
+  catch (e) { alert(t('PDF yuklanmadi. Internetni tekshirib qayta urinib ko‘ring.', 'PDF не загрузился. Проверьте интернет и попробуйте снова.')); }
+  b.textContent = label;
 }
 function openPresenter() { window.open(`deck.html?k=${encodeURIComponent(KEY)}&lang=${LANG}&p=1#${cur + 1}`, 'suflyor', 'width=1400,height=850'); }
 main();

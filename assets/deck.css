@@ -192,3 +192,25 @@ table .dbar i{display:flex;align-items:center;justify-content:center;color:#fff;
 .psyb .dbar{height:34px}
 .psyb .legend5{font-size:18px}
 .psyb h3{font-size:24px;margin-bottom:6px}
+.fcol{height:100%}.fcol h3{font-size:32px;margin-bottom:16px}
+.frow{display:grid;grid-template-columns:1fr auto;column-gap:20px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+.frow:last-child{border-bottom:0}
+.frow .fn{font-size:30px;font-weight:700;color:var(--navy);grid-column:1}
+.frow .fd{font-size:20px;color:var(--muted,#8792ad);grid-column:1}
+.frow b{font-size:46px;font-weight:800;grid-column:2;grid-row:1/3}
+button.sug{border:0;font:inherit;cursor:pointer}
+.dlb{left:220px!important}
+.print .sug{display:none}
+/* Ota-ona PDF nusxasi: har slayd bitta sahifa */
+@page{size:1920px 1080px;margin:0}
+body.print{overflow:visible;height:auto;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html:has(body.print){overflow:visible;height:auto}
+body.print .viewport{position:static;overflow:visible;height:auto;width:1920px}
+body.print .stage{position:static!important;transform:none!important;height:auto;overflow:visible;border-radius:0}
+body.print .slide{position:relative;inset:auto;width:1920px;height:1080px;opacity:1;overflow:hidden;break-after:page;display:none}
+body.print .slide.on{display:flex}
+body.print .progress,body.print .help,body.print .tip{display:none}
+body.print .acc button{font-size:22px;padding:10px 20px}
+body.print .acc button::after{content:""}
+body.print .acc.open div{font-size:20px;padding:0 20px 12px}
+body.print #faq{gap:8px!important;margin-top:14px!important}

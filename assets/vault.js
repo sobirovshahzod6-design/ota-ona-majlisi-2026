@@ -53,5 +53,18 @@ const VAULT = (() => {
       if (key) { try { return await open(key, box); } catch (e) { key = null; } }
       return ask(box);
     },
+    // Shifrlangan PDF: fayl = iv (12 bayt) + shifr matni. Kalit deck ochilganda saqlangan.
+    async pdf(url, name) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('pdf ' + r.status);
+      const buf = await r.arrayBuffer();
+      key = key || await stored();
+      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([plain], { type: 'application/pdf' }));
+      a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+    },
   };
 })();

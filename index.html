@@ -67,7 +67,7 @@ function draw(){
     return `<div class="c"><h2>${c.k}<span class="tag ${c.ready?'':'no'}">${c.ready?t.rd:t.dr}</span></h2>
       <div class="m">${t[c.role]}: ${c.lead}<br>${c.n} ${t.n} · ${c.lang==='ru'?'RU':'UZ'}</div>
       <div class="lg">${['uz','ru'].map(x=>`<button data-k="${c.k}" data-l="${x}" class="${x===l?'on':''}">${x.toUpperCase()}</button>`).join('')}</div>
-      <div class="btns"><a href="deck.html?${q}" ${c.ready?'':'aria-disabled="true"'}>${t.go}</a><a class="s" href="deck.html?${q}&p=1" target="suflyor" ${c.ready?'':'aria-disabled="true"'}>${t.pr}</a></div></div>`}).join('');
+      <div class="btns"><a href="deck.html?${q}" ${c.ready?'':'aria-disabled="true"'}>${t.go}</a><a class="s" href="deck.html?${q}&p=1" target="suflyor" ${c.ready?'':'aria-disabled="true"'}>${t.pr}</a><a class="s" href="deck.html?${q}&dl=1" ${c.ready?'':'aria-disabled="true"'}>PDF</a></div></div>`}).join('');
   document.querySelectorAll('.lg button').forEach(b=>b.onclick=()=>{lang[b.dataset.k]=b.dataset.l;draw()});
 }
 document.querySelectorAll('#ui button').forEach(b=>b.onclick=()=>{L=b.dataset.l;try{localStorage.setItem('majlis.ui',L)}catch(e){};draw()});
