@@ -693,10 +693,10 @@ function show(stage, i, fr) {
   });
 }
 
-function fragsOf(i) { return document.querySelector(`#main .slide[data-i="${i}"]`)?.querySelectorAll('.frag').length || 0; }
+function fragsOf(i) { return document.querySelector(`${PRESENTER ? '#pcur' : '#main'} .slide[data-i="${i}"]`)?.querySelectorAll('.frag').length || 0; }
 
 function go(i, fr, from) {
-  cur = Math.max(0, Math.min(SLIDES.length - 1, i)); frag = fr;
+  cur = Math.max(0, Math.min(SLIDES.length - 1, i)); frag = Math.min(fr, fragsOf(cur)); // prev() 99 yuboradi: haqiqiy songa cheklanadi
   const main = document.getElementById('main');
   if (main) show(main, cur, frag);
   if (PRESENTER) updatePresenter();
@@ -714,8 +714,8 @@ function suggestLink() {
   const text = `${t('Taklif', 'Предложение')} · ${D.k} · ${cur + 1}-${t('slayd', 'слайд')} (${kick}: ${title})\n${location.href}\n\n`;
   a.href = `https://t.me/${TG_TO}?text=${encodeURIComponent(text)}`;
 }
-function next() { const n = PRESENTER ? (document.querySelector(`#pcur .slide[data-i="${cur}"]`)?.querySelectorAll('.frag').length || 0) : fragsOf(cur); frag < n ? go(cur, frag + 1) : cur < SLIDES.length - 1 && go(cur + 1, 0); }
-function prev() { frag > 0 ? go(cur, frag - 1) : cur > 0 && go(cur - 1, 99); }
+function next() { frag < fragsOf(cur) ? go(cur, frag + 1) : cur < SLIDES.length - 1 && go(cur + 1, 0); }
+function prev() { cur > 0 ? go(cur - 1, 99) : go(0, 0); } // bir bosish = bir slayd, oldingi slayd to'liq ochiq
 
 function setLang(l) {
   LANG = l; localSet('lang', l); document.documentElement.lang = l;
