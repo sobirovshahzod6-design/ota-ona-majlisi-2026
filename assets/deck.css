@@ -214,3 +214,4 @@ body.print .acc button{font-size:22px;padding:10px 20px}
 body.print .acc button::after{content:""}
 body.print .acc.open div{font-size:20px;padding:0 20px 12px}
 body.print #faq{gap:8px!important;margin-top:14px!important}
+.fimg{flex:0 0 auto;height:100%;max-height:760px}.fimg img{height:100%;width:auto;display:block;border-radius:24px;background:#fff}
