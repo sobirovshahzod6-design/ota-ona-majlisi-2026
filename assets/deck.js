@@ -781,7 +781,7 @@ function tips(root) {
 async function main() {
   document.documentElement.lang = LANG;
   try { D = await VAULT.json(`data/${KEY}.json`); }
-  catch (e) { document.body.innerHTML = `<p style="color:#fff;padding:40px;font-size:24px">${KEY}: ma'lumot topilmadi / данные не найдены</p>`; return; }
+  catch (e) { document.body.innerHTML = `<p style="color:#fff;padding:40px;font-size:24px">${esc(KEY)}: ma'lumot topilmadi / данные не найдены</p>`; return; }
   document.title = `${D.k} · ${t('Ota-onalar majlisi', 'Родительское собрание')}`;
   if (PRESENTER) {
     document.body.classList.add('presenter');

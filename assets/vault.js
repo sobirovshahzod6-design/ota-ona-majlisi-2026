@@ -6,11 +6,10 @@ const VAULT = (() => {
   const KEY_ITEM = 'majlis.key';
   let key = null;
   // Havola orqali kirish: ...#key=<base64url>. Kalit fragmentda, serverga yuborilmaydi, parol so'ralmaydi.
-  const fromLink = location.hash.match(/key=([\w-]+)/);
+  const fromLink = location.hash.match(/^#key=([\w-]{43})=?$/); // 32 bayt
   let linkRaw = null;
   if (fromLink) {
     linkRaw = fromLink[1].replace(/-/g, '+').replace(/_/g, '/');
-    try { localStorage.setItem(KEY_ITEM, linkRaw); } catch (e) {}
     history.replaceState(null, '', location.pathname + location.search);
   }
 
@@ -22,7 +21,7 @@ const VAULT = (() => {
   async function stored() {
     try {
       const raw = linkRaw || localStorage.getItem(KEY_ITEM);
-      return raw ? crypto.subtle.importKey('raw', b64(raw), 'AES-GCM', false, ['decrypt']) : null;
+      return raw ? await crypto.subtle.importKey('raw', b64(raw), 'AES-GCM', false, ['decrypt']) : null;
     } catch (e) { return null; }
   }
   async function remember(k) {
@@ -58,7 +57,13 @@ const VAULT = (() => {
       const box = await (await fetch(url, { cache: 'no-cache' })).json();
       if (!box || !box.c) return box; // shifrlanmagan (lokal ishlash)
       key = key || await stored();
-      if (key) { try { return await open(key, box); } catch (e) { key = null; } }
+      if (key) {
+        try {
+          const data = await open(key, box);
+          if (linkRaw) { try { localStorage.setItem(KEY_ITEM, linkRaw); } catch (e) {} } // kalit tasdiqlangach saqlanadi
+          return data;
+        } catch (e) { key = null; try { localStorage.removeItem(KEY_ITEM); } catch (e2) {} }
+      }
       return ask(box);
     },
     // Shifrlangan PDF: fayl = iv (12 bayt) + shifr matni. Kalit deck ochilganda saqlangan.
