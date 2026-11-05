@@ -5,6 +5,14 @@ const VAULT = (() => {
   const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
   const KEY_ITEM = 'majlis.key';
   let key = null;
+  // Havola orqali kirish: ...#key=<base64url>. Kalit fragmentda, serverga yuborilmaydi, parol so'ralmaydi.
+  const fromLink = location.hash.match(/key=([\w-]+)/);
+  let linkRaw = null;
+  if (fromLink) {
+    linkRaw = fromLink[1].replace(/-/g, '+').replace(/_/g, '/');
+    try { localStorage.setItem(KEY_ITEM, linkRaw); } catch (e) {}
+    history.replaceState(null, '', location.pathname + location.search);
+  }
 
   async function derive(pass, salt) {
     const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
@@ -13,7 +21,7 @@ const VAULT = (() => {
   }
   async function stored() {
     try {
-      const raw = localStorage.getItem(KEY_ITEM);
+      const raw = linkRaw || localStorage.getItem(KEY_ITEM);
       return raw ? crypto.subtle.importKey('raw', b64(raw), 'AES-GCM', false, ['decrypt']) : null;
     } catch (e) { return null; }
   }
